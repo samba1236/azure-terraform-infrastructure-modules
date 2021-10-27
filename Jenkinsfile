@@ -8,20 +8,20 @@ pipeline {
     parameters {
         string(name: 'REPO_NAME', defaultValue: 'osim-terraform', description: 'Terraform Repository Name')
         choice(choices: ['prod'], description: 'Terraform Environment for deployment', name: 'TERRAFORM_ENVIRONMENT')
-        gitParameter branchFilter: 'origin/(.*)', defaultValue: 'master', name: 'BRANCH', type: 'PT_BRANCH'
+        // gitParameter branchFilter: 'origin/(.*)', defaultValue: 'master', name: 'BRANCH', type: 'PT_BRANCH'
     }
     tools {
         terraform 'Terraform-14'
     }
     stages{
 
-        stage('Git Checkout')
-                {
-                    steps{
-                        git credentialsId: 'cd4cac1ad8fbc8f3016ecaced88cde357d8eb096' , url: 'https://github.com/samba1236/azure-terraform-infrastructure-modules.git' ,  branch: "${params.BRANCH}"
-                    }
+        // stage('Git Checkout')
+        //         {
+        //             steps{
+        //                 git credentialsId: 'sneha-sp' , url: 'https://github.com/samba1236/azure-terraform-infrastructure-modules.git' ,  branch: "${params.BRANCH}"
+        //             }
 
-                }
+        //         }
         /* Terraform Init */
         stage('Terraform Init') {
             steps{
