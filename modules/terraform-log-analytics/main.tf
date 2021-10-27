@@ -4,14 +4,14 @@
 
 resource "random_id" "this" {
   keepers = {
-    rg = "${var.resource_group_name}-${var.environment}"
+    rg = var.resource_group_name
 
   }
   byte_length = 5
 }
 
 data "azurerm_resource_group" "this" {
-  name     = "${var.resource_group_name}-${var.environment}"
+  name     = var.resource_group_name
 }
 
 resource "azurerm_log_analytics_workspace" "this" {

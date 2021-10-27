@@ -52,7 +52,7 @@ pipeline {
 
     }
 }
-def terraformStep(tfStep, tfEnv)
+def terraformStep(tfStep)
 {
     echo "Executing Terraform Step " + tfStep
     //credId = "AzureServicePrincipal${tfEnv}"

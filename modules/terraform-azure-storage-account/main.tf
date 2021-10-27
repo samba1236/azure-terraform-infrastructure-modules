@@ -10,8 +10,8 @@ resource "random_id" "sa" {
 }
 
 resource "azurerm_storage_account" "sa" {
-  name                     = "osim_${var.storage_name}${lower(random_id.sa.hex)}"
-  resource_group_name      = "${var.resource_group_name}-${var.environment}"
+  name                     = "${var.storage_name}${lower(random_id.sa.hex)}"
+  resource_group_name      = var.resource_group_name
   location                 = var.location
   account_tier             = var.account_tier
   account_replication_type = var.account_replication_type

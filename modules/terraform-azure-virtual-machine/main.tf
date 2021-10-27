@@ -8,23 +8,23 @@ module "os" {
 }
 
 data "azurerm_resource_group" "this" {
-  name     = "${var.resource_group_name}-${var.environment}"
+  name     = var.resource_group_name
 }
 
-# resource "azurerm_network_interface" "vm" {
+# data "azurerm_network_interface" "vm" {
 #   name                          = "${var.vm_hostname}-nic"
 #   resource_group_name           = "${var.resource_group_name}-${var.environment}"
 #   location                      = var.location
 # }
 
 resource "azurerm_virtual_machine" "vm-linux" {
-  count                         = ! contains(tolist(var.vm_os_simple, var.vm_os_offer), "Windows") && ! var.is_windows_image ? var.nb_instances : 0
+  # count                         = ! contains(tolist(var.vm_os_simple, var.vm_os_offer), "Windows") && ! var.is_windows_image ? var.nb_instances : 0
   name                          = var.vm_hostname
   resource_group_name           = data.azurerm_resource_group.this.name
   location                      = data.azurerm_resource_group.this.location
   vm_size                       = var.vm_size
   # network_interface_ids         = [element(azurerm_network_interface.vm.*.id, count.index)]
-  network_interface_ids         = var.azurerm_network_interface.id
+  network_interface_ids         = var.network_interface_ids
   delete_os_disk_on_termination = var.delete_os_disk_on_termination
 
   storage_image_reference {
@@ -53,9 +53,9 @@ resource "azurerm_virtual_machine" "vm-linux" {
 
   tags                          = var.tags
 
-  boot_diagnostics {
-    enabled                     = var.boot_diagnostics
-    # storage_uri                 = var.blob_storage_url
-  }
+  # boot_diagnostics {
+  #   enabled                     = var.boot_diagnostics
+  #   storage_uri                 = var.blob_storage_url
+  # }
 }
 

@@ -46,10 +46,10 @@ variable "tags" {
   }
 }
 
-variable "vnet_subnet_id" {
-  type = string
-  # default = "osim_prod_subnet"
-}
+# variable "vnet_subnet_id" {
+#   type = string
+#   # default = "osim_prod_subnet"
+# }
 
 variable "nb_instances" {
   description = "Specify the number of vm instances"
@@ -61,3 +61,10 @@ variable "vm_hostname" {
   description = "vm_hostname."
   # default     = false
 }
+
+# variable "vnet_subnet_id" {
+#   description = "The subnet id of the virtual network where the virtual machines will reside."
+#   type        = string
+#   default     = 1
+
+# }

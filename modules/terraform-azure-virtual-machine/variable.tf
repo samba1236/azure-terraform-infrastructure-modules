@@ -77,13 +77,13 @@ variable "admin_password" {
   # default     = "Sachin@123456789"
 }
 
-variable "boot_diagnostics" {
-  type        = bool
-  description = "(Optional) Enable or Disable boot diagnostics"
-  # default     = false
-}
+# variable "boot_diagnostics" {
+#   type        = bool
+#   description = "(Optional) Enable or Disable boot diagnostics"
+#   # default     = false
+# }
 
-# variable blob_storage_url {
+# variable "blob_storage_url" {
 #   description = "Blob storage URL"
 # }
 
@@ -113,7 +113,7 @@ variable "tags" {
 }
 
 variable "network_interface_ids" {
-  type        = string
+  type    = list(string)
   description = "Azure network_interface_ids"
   # default     = ""
 }

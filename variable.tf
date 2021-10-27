@@ -6,7 +6,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "The name of the location in which the resources will be created"
   type        = string
-  default     = "west US"
+  default     = "West Europe"
 }
 variable "environment" {
   description = "The env"
@@ -18,21 +18,21 @@ variable "environment" {
 #  tfstate storage container
 ############################
 
-variable "storage_account_name" {
-  description = "The env"
-  type        = string
-  default     = "osimprodtfstatecontainer"
-}
-variable "container_name" {
-  description = "The env"
-  type        = string
-  default     = "tfstatefile"
-}
-variable "key" {
-  description = "The env"
-  type        = string
-  default     = "osim.prd.terraform.tfstate"
-}
+# variable "storage_account_name" {
+#   description = "The env"
+#   type        = string
+#   default     = "osimprodtfstatecontainer"
+# }
+# variable "container_name" {
+#   description = "The env"
+#   type        = string
+#   default     = "tfstatefile"
+# }
+# variable "key" {
+#   description = "The env"
+#   type        = string
+#   default     = "osim.prd.terraform.tfstate"
+# }
 
 ############################
 # VM storage Account
@@ -73,13 +73,15 @@ variable "vnet_name" {
   default     = "osim_prod_vnet"
 }
 variable "address_space" {
+  type        = string
   description = "The address space that is used by the virtual network."
   default     = "10.246.0.0/23"
 }
 
 variable "address_prefixes" {
+  type        = string
   description = "The address prefix to use for the subnet."
-  default     = "[10.246.1.0/24]"
+  default     = "10.246.1.0/24"
 }
 
 variable "subnet_names" {
@@ -102,10 +104,11 @@ variable "storage_account_type" {
   default     = "Premium_LRS"
 }
 
-variable "vnet_subnet_id" {
-  type    = string
-  default = "osim_prod_subnet"
-}
+# variable "subnet_id" {
+#   type    = string
+#   # default = "osimprodsubnet"
+# }
+
 
 variable "nb_instances" {
   description = "Specify the number of vm instances"
@@ -118,7 +121,7 @@ variable "is_windows_image" {
 }
 
 # variable "network_interface_ids" {
-#   type        = string
+#   type        = list(string)
 #   description = "Azure network_interface_ids"
 #   # default     = ""
 # }
@@ -129,7 +132,7 @@ variable "is_windows_image" {
 variable "vm_size" {
   type        = string
   description = "This variable defines the VM size"
-  default     = "Standard_D2_v2"
+  default     = "Standard_DS1_v2"
 }
 
 variable "delete_os_disk_on_termination" {
@@ -180,11 +183,11 @@ variable "admin_password" {
   default     = "Sachin@123456789"
 }
 
-variable "boot_diagnostics" {
-  type        = bool
-  description = "(Optional) Enable or Disable boot diagnostics"
-  default     = false
-}
+# variable "boot_diagnostics" {
+#   type        = bool
+#   description = "(Optional) Enable or Disable boot diagnostics"
+#   default     = false
+# }
 
 # variable "blob_storage_url" {
 #   description = "Blob storage URL"
@@ -195,18 +198,18 @@ variable "boot_diagnostics" {
 # log analytics
 ############################
 
-variable "lg_name" {
-  type        = string
-  description = "Log Analytics name"
-  default     = "osim_vm_prod_log_analy_nm"
-}
+# variable "lg_name" {
+#   type        = string
+#   description = "Log Analytics name"
+#   default     = "osimVmLogAna"
+# }
 
-variable "sku" {
-  type    = string
-  default = "Premium"
-}
+# variable "sku" {
+#   type    = string
+#   default = "Premium"
+# }
 
-variable "retention_in_days" {
-  type    = string
-  default = "30"
-}
+# variable "retention_in_days" {
+#   type    = string
+#   default = "30"
+# }

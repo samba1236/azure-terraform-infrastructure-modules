@@ -4,14 +4,14 @@
 
 #Azure Generic vNet Module
 data "azurerm_resource_group" "network" {
-  name     = "${var.resource_group_name}-${var.environment}"
+  name     = var.resource_group_name
 }
 
 resource "azurerm_virtual_network" "vnet" {
   name                = var.vnet_name
   resource_group_name = data.azurerm_resource_group.network.name
   location            = var.location
-  address_space       = [var.address_space]
+  address_space       = var.address_space
   tags                = var.tags
 }
 
@@ -30,14 +30,14 @@ resource "azurerm_network_security_group" "vm" {
   tags                          = var.tags
 }
 
-resource "azurerm_network_interface" "vm" {
+resource "azurerm_network_interface" "vm1" {
   count                         = var.nb_instances
   name                          = "${var.vm_hostname}-nic"
   resource_group_name           = var.resource_group_name
   location                      = var.location
   ip_configuration {
     name                          = "${var.vm_hostname}-ip"
-    subnet_id                     = var.vnet_subnet_id
+    subnet_id                     = azurerm_subnet.subnet.id
     private_ip_address_allocation = "Dynamic"
     private_ip_address            = ""
   }
@@ -46,7 +46,7 @@ resource "azurerm_network_interface" "vm" {
 
 resource "azurerm_network_interface_security_group_association" "test" {
   count                           = var.nb_instances
-  network_interface_id            = azurerm_network_interface.vm[count.index].id
+  network_interface_id            = azurerm_network_interface.vm1[count.index].id
   network_security_group_id       = azurerm_network_security_group.vm.id
 }
 

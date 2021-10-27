@@ -2,16 +2,16 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~>2.0"
+      version = "2.82.0"
     }
   }
   # Terraform State Storage to Azure Storage Container
-  backend "azurerm" {
-    resource_group_name   = "${var.resource_group_name}-${var.environment}"
-    storage_account_name  = var.storage_account_name
-    container_name        = var.container_name
-    key                   = var.key
-  }  
+  # backend "azurerm" {
+  #   resource_group_name   = "${var.resource_group_name}-${var.environment}"
+  #   storage_account_name  = var.storage_account_name
+  #   container_name        = var.container_name
+  #   key                   = var.key
+  # }  
 }
 provider "azurerm" {
   features {}
@@ -31,8 +31,8 @@ module "osim-azure-storage-account" {
   account_replication_type = var.account_replication_type
   storage_name             = var.storage_name
   # tags                     = var.tags
-  environment             = var.environment
-  depends_on = [azurerm_resource_group.resource_group_name]
+  environment = var.environment
+  depends_on  = [azurerm_resource_group.resource_group_name]
 
 }
 
@@ -45,13 +45,14 @@ module "terraform-azure-network" {
   tags                = var.tags
 
   address_prefixes = var.address_prefixes
-  subnet_names = var.subnet_names
+  subnet_names     = var.subnet_names
   # virtual_network_name = azurerm_virtual_network.vnet.name
   # service_endpoints = ["Microsoft.Sql"]
   vm_hostname    = var.vm_hostname
   nb_instances   = var.nb_instances
-  vnet_subnet_id = var.vnet_subnet_id
-  environment=var.environment
+  environment    = var.environment
+
+  # subnet_id = module.terraform-azure-network.subnet_id
 
   depends_on = [azurerm_resource_group.resource_group_name]
 
@@ -75,30 +76,23 @@ module "terraform-azure-virtual-machine" {
   storage_account_type          = var.storage_account_type
   admin_username                = var.admin_username
   admin_password                = var.admin_password
-  boot_diagnostics              = var.boot_diagnostics
+  # boot_diagnostics              = var.boot_diagnostics
   # blob_storage_url              = var.blob_storage_url
-  environment                   = var.environment
+  environment = var.environment
 
-  # data "azurerm_network_interface" "vm" {
-  #   name                          = "${var.vm_hostname}-nic"
-  #   resource_group_name           = "${var.resource_group_name}-${var.environment}"
-  # }
-
-  network_interface_ids = ${module.terraform-azure-network.azurerm_network_interface.vm.name}
-  instances = ["${module.terraform-azure-network.azurerm_network_interface.vm}"]
-
+  network_interface_ids = [for n in module.terraform-azure-network.network_interfaces : n.id]
   depends_on = [azurerm_resource_group.resource_group_name]
 
 }
 
-module "terraform-log-analytics" {
-  source            = "./modules/terraform-log-analytics"
-  resource_group_name           = azurerm_resource_group.resource_group_name.name
-  # location                      = azurerm_resource_group.resource_group_name.location
-  sku               = var.sku
-  retention_in_days = var.retention_in_days
-  lg_name           = var.lg_name
-  environment       = var.environment
-  depends_on        = [azurerm_resource_group.resource_group_name]
+# module "terraform-log-analytics" {
+#   source              = "./modules/terraform-log-analytics"
+#   resource_group_name = azurerm_resource_group.resource_group_name.name
+#   # location                      = azurerm_resource_group.resource_group_name.location
+#   sku               = var.sku
+#   retention_in_days = var.retention_in_days
+#   lg_name           = var.lg_name
+#   environment       = var.environment
+#   depends_on        = [azurerm_resource_group.resource_group_name]
 
-}
+# }
