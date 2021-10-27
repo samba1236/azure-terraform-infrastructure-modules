@@ -2,17 +2,17 @@
 proceedToBuild = true
 
 pipeline {
-    agent {
-        label 'docker-maven-slave'
-    }
+    // agent {
+    //     label 'docker-maven-slave'
+    // }
     parameters {
         string(name: 'REPO_NAME', defaultValue: 'osim-terraform', description: 'Terraform Repository Name')
         choice(choices: ['prod'], description: 'Terraform Environment for deployment', name: 'TERRAFORM_ENVIRONMENT')
         // gitParameter branchFilter: 'origin/(.*)', defaultValue: 'master', name: 'BRANCH', type: 'PT_BRANCH'
     }
-    tools {
-        terraform 'Terraform-14'
-    }
+    // tools {
+    //     terraform 'Terraform-14'
+    // }
     stages{
 
         // stage('Git Checkout')
@@ -49,6 +49,18 @@ pipeline {
                 echo "Reached apply step"
             }
         }
+        // stage('Upload tfstate'){
+        //     steps{
+        //         terraformStep('statefile')
+        //     container('terraform-az') {
+        //         // Upload the state of the plan to Azure Blob Storage
+        //         sh (script: "cd terraform-plans/create-vmss-from-image && tar -czvf ~/workspace/${env.JOB_NAME}/$deployment'.tar.gz' .")
+        //         sh "pwd"
+        //         azureUpload blobProperties: [cacheControl: '', contentEncoding: '', contentLanguage: '', contentType: '', detectContentType: true], containerName: '<container-name>', fileShareName: '', filesPath: '${deployment}.tar.gz', storageCredentialId: '<jenkins-storage-id>', storageType: 'blobstorage'
+                
+        //     }
+        //  }
+        // }
 
     }
 }
