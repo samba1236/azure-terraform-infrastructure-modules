@@ -1,151 +1,112 @@
-@Library("com.optum.jenkins.pipeline.library@master") _
-DEPLOYABLE_BRANCHES = ["elink"]
-SERVICE_PRINCIPAL = [elink: "test-eas-service-principle"]
-REMOTE_STATE_PARAMS = [elink: "remote-backend-stage.properties"]
-TF_PARAMS = [elink: "terraform-stage.tfvars"]
+#!/usr/bin/env groovy
+proceedToBuild = true
+
 pipeline {
-  agent none
-  environment {
-    AZURE_CREDENTIALS_ID = getAzureCredentialId(env.BRANCH_NAME)
-    DEPLOY_BRANCH = getDeployBranch(env.BRANCH_NAME)
-    AZURECLI_VERSION = '2.11.1'
-    TERRAFORM_VERSION = '0.14'
-    TERRAFORM_VARS = getTfVars(env.BRANCH_NAME)
-  }
-  options {
-    disableConcurrentBuilds()
-  }
-  stages {
-    stage ('Prepare Terraform Environment') {
-      //agent {
-        //label 'docker-terraform-agent'
-      //}
-      agent any
-      environment {
-        //Set all these values for each environment
-        tfvars = readProperties file: getRemoteFileName(env.BRANCH_NAME)
-        VARIABLES_FILE = "${env.TERRAFORM_VARS}"
-        TF_BACKEND_RG = "${tfvars.tf_backend_rg}"
-        TF_BACKEND_ACCOUNT = "${tfvars.tf_backend_account}"
-        TF_BACKEND_LOCATION = "${tfvars.tf_backend_location}"
-        TF_BACKEND_CONTAINER = "${tfvars.tf_backend_container}"
-        TF_BACKEND_KEY = "${tfvars.tf_backend_key}"
-      } 
-      stages {
+    agent {
+        label 'docker-maven-slave'
+    }
+    parameters {
+        string(name: 'REPO_NAME', defaultValue: 'osim-terraform', description: 'Terraform Repository Name')
+        choice(choices: ['prod'], description: 'Terraform Environment for deployment', name: 'TERRAFORM_ENVIRONMENT')
+        gitParameter branchFilter: 'origin/(.*)', defaultValue: 'master', name: 'BRANCH', type: 'PT_BRANCH'
+    }
+    tools {
+        terraform 'Terraform-14'
+    }
+    stages{
+
+        stage('Git Checkout')
+                {
+                    steps{
+                        git credentialsId: 'cd4cac1ad8fbc8f3016ecaced88cde357d8eb096' , url: 'https://github.com/samba1236/azure-terraform-infrastructure-modules.git' ,  branch: "${params.BRANCH}"
+                    }
+
+                }
+        /* Terraform Init */
         stage('Terraform Init') {
-          steps {
-
-            echo "AZURE_CREDENTIALS_ID: ${AZURE_CREDENTIALS_ID}";
-            echo "TERRAFORM_VARS: ${env.TERRAFORM_VARS}";
-            echo "env.branch: ${env.BRANCH_NAME}";
-            echo "env.DEPLOY_BRANCH: ${env.DEPLOY_BRANCH}";
-            echo "env.tf_backend_rg: ${env.TF_BACKEND_RG}";
-            echo "env.tf_backend_location: ${env.TF_BACKEND_LOCATION}";
-            echo "env.tf_backend_key: ${env.TF_BACKEND_KEY}";
-            echo "env.tf_backend_account: ${env.TF_BACKEND_ACCOUNT}";
-            echo "env.tf_backend_container: ${env.TF_BACKEND_CONTAINER}";  
-
-            glAzureLogin(env.AZURE_CREDENTIALS_ID) {
-              glTerraformInit(
-                azureInit: true,
-              )
+            steps{
+                terraformStep('init')
             }
-            stash name: 'tfenv', includes: ".terraform/**/*, .terraform.lock.hcl"
-          }
         }
+        /* Terraform Validate*/
+        stage('Terraform Validate') {
+            steps{
+                //sh "terraform  validate"
+                terraformStep('validate')
+            }
+        }
+        /* Terraform Plan */
         stage('Terraform Plan') {
-          steps {
-            ansiColor('xterm') {
-              unstash name: 'tfenv'
-              glAzureLogin(env.AZURE_CREDENTIALS_ID) {
-                sh "mkdir -p /home/jenkins/.kube/ && touch /home/jenkins/.kube/config"
-                glTerraformPlan(
-                  additionalFlags: [
-                    ('var-file'): env.VARIABLES_FILE,
-                    out: 'plan.tfplan'
-                  ]
-                )
-              }
-              stash name: 'tfenv', includes: ".terraform/**/*, plan.tfplan, .terraform.lock.hcl"
+            steps{
+                terraformStep('plan')
             }
-          }
         }
-      }
-    }
-    stage('Validate Terraform Plan') {
-      agent none
-      when {
-        branch env.DEPLOY_BRANCH
-      }
-      steps {
-        timeout(time: 30, unit: 'MINUTES') {
-          input(message: 'Apply this terraform plan?')
+
+        /* Terraform Apply*/
+        stage('Terraform Apply') {
+            steps{
+                terraformStep('apply')
+                echo "Reached apply step"
+            }
         }
-      }
-    }
-    stage('Apply Terraform Plan') {
-     // agent {
-        //label 'docker-terraform-agent'
-      //}
-      agent any
-      when {
-        branch env.DEPLOY_BRANCH
-      }
-      steps {
-        glAzureLogin(env.AZURE_CREDENTIALS_ID) {
-          ansiColor('xterm') {
-            unstash name: 'tfenv'
-            sh "mkdir -p /home/jenkins/.kube/ && touch /home/jenkins/.kube/config"
-            glTerraformApply(
-              planFile: 'plan.tfplan'
-            )
-          }
-        }
-      }
-    }
-  }
-}
-/* The method will get service principle by branch name*/
-def getAzureCredentialId(branchName) {
-  println "principle map : ${SERVICE_PRINCIPAL}"
-    if(SERVICE_PRINCIPAL.containsKey(branchName)) {
-        return SERVICE_PRINCIPAL[branchName];
-      }
-     else {
-        throw new Exception("service principle is not configured for " + branchName)
+
     }
 }
 
-/* The method will get deployable branch name*/
-def getDeployBranch(branchName){
-  println "branch name : ${branchName}"
-   if(DEPLOYABLE_BRANCHES.contains(branchName)) {
-        return branchName;
-    } else {
-        throw new Exception("not a valid branch for deployment: " + branchName)
-    }
-}
+def terraformStep(tfStep)
+{
+    echo "Executing Terraform Step " + tfStep
+    //credId = "AzureServicePrincipal${tfEnv}"
+    credId = "sneha-sp"
+    echo "Using Credential : " + credId
+    stage("Terraform $tfStep"){
+        // withCredentials([azureServicePrincipal(
+        //         credentialsId: credId,
+        //         subscriptionIdVariable: 'ARM_SUBSCRIPTION_ID',
+        //         clientIdVariable: 'ARM_CLIENT_ID',
+        //         clientSecretVariable: 'ARM_CLIENT_SECRET',
+        //         tenantIdVariable: 'ARM_TENANT_ID'
+        // )])
+        withCredentials([azureServicePrincipal('sneha-sp')])
+        {
+            //echo "client ID is $AZURE_CLIENT_ID"
+            echo "client ID is $ARM_CLIENT_ID"
+            sh "az login --service-principal -u ${ARM_CLIENT_ID} -p ${ARM_CLIENT_SECRET} -t ${ARM_TENANT_ID} --allow-no-subscriptions"
+            switch (tfStep) {
+                case "init":
+                    echo "Executing Terraform init :"
+                    sh "ls -la"
+                    if (credId=="sneha-sp")
+                    {
+                    sh '''
+                    terraform  init 
+                    '''
+                    }
+                    else
+                    //sh "terraform  init "
+                    break
+                case "validate":
+                    echo "Executing Terraform Validate :"
+                    sh """
+                    terraform  validate 
+                    """
+                    break
+                case "plan":
+                    echo "Executing Terraform plan :"
+                    sh '''
+                    terraform  plan -out=./output 
+                    '''
+                    break
+                case "apply":
+                    echo "Executing Terraform apply :"
+                    sh '''
+                    terraform  apply  -input=false -auto-approve 
+                    '''
+                    break
+                default:
+                    proceedToBuild = false
+            }
 
-/* The method will get the remote backend property file name*/
-def getRemoteFileName(branchName) {
-  
-    if(REMOTE_STATE_PARAMS.containsKey(branchName)) {
-      println "remote backend properties : ${REMOTE_STATE_PARAMS[branchName]}"
-        return REMOTE_STATE_PARAMS[branchName];
-      }
-     else {
-        throw new Exception("terraform vars file is not avilable for this environment" + branchName)
-    }
-}
-
-/* The method will get the tf vars file name*/
-def getTfVars(branchName) {
-  
-    if(TF_PARAMS.containsKey(branchName)) {
-      println "tf vars file : ${TF_PARAMS[branchName]}"
-        return TF_PARAMS[branchName];
-      }
-     else {
-        throw new Exception("terraform vars file is not avilable for this environment" + branchName)
+        }
     }
 }
