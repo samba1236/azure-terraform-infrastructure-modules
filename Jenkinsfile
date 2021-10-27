@@ -2,9 +2,7 @@
 proceedToBuild = true
 
 pipeline {
-    // agent {
-    //     label 'docker-maven-slave'
-    // }
+    agent any
     parameters {
         string(name: 'REPO_NAME', defaultValue: 'osim-terraform', description: 'Terraform Repository Name')
         choice(choices: ['prod'], description: 'Terraform Environment for deployment', name: 'TERRAFORM_ENVIRONMENT')
