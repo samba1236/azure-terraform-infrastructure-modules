@@ -17,4 +17,3 @@ resource "azurerm_storage_account" "sa" {
   account_replication_type = var.account_replication_type
   tags                     = var.tags
 }
-

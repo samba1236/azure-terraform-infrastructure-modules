@@ -198,18 +198,18 @@ variable "admin_password" {
 # log analytics
 ############################
 
-# variable "lg_name" {
-#   type        = string
-#   description = "Log Analytics name"
-#   default     = "osimVmLogAna"
-# }
+variable "lg_name" {
+  type        = string
+  description = "Log Analytics name"
+  default     = "osimVmLogAna"
+}
 
-# variable "sku" {
-#   type    = string
-#   default = "Premium"
-# }
+variable "sku" {
+  type    = string
+  default = "PerGB2018"
+}
 
-# variable "retention_in_days" {
-#   type    = string
-#   default = "30"
-# }
+variable "retention_in_days" {
+  type    = string
+  default = "30"
+}

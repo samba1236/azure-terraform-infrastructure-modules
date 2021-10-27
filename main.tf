@@ -13,6 +13,7 @@ terraform {
   #   key                   = var.key
   # }  
 }
+
 provider "azurerm" {
   features {}
 }
@@ -85,14 +86,14 @@ module "terraform-azure-virtual-machine" {
 
 }
 
-# module "terraform-log-analytics" {
-#   source              = "./modules/terraform-log-analytics"
-#   resource_group_name = azurerm_resource_group.resource_group_name.name
-#   # location                      = azurerm_resource_group.resource_group_name.location
-#   sku               = var.sku
-#   retention_in_days = var.retention_in_days
-#   lg_name           = var.lg_name
-#   environment       = var.environment
-#   depends_on        = [azurerm_resource_group.resource_group_name]
+module "terraform-log-analytics" {
+  source              = "./modules/terraform-log-analytics"
+  resource_group_name = azurerm_resource_group.resource_group_name.name
+  # location                      = azurerm_resource_group.resource_group_name.location
+  sku               = var.sku
+  retention_in_days = var.retention_in_days
+  lg_name           = var.lg_name
+  environment       = var.environment
+  depends_on        = [azurerm_resource_group.resource_group_name]
 
-# }
+}
