@@ -17,3 +17,10 @@ resource "azurerm_storage_account" "sa" {
   account_replication_type = var.account_replication_type
   tags                     = var.tags
 }
+
+
+# resource "azurerm_storage_container" "tfstate" {
+#   name                  = "tfstatefiles"
+#   storage_account_name  = azurerm_storage_account.sa.name
+#   container_access_type = "container"
+# }

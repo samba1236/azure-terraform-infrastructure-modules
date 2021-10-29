@@ -68,7 +68,7 @@ def terraformStep(tfStep)
     echo "Executing Terraform Step " + tfStep
     //credId = "AzureServicePrincipal${tfEnv}"
     credId = "sneha-sp"
-    echo "Using Credential : " + credId
+    // echo "Using Credential : " + credId
     stage("Terraform $tfStep"){
         // withCredentials([azureServicePrincipal(
         //         credentialsId: credId,
