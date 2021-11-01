@@ -72,16 +72,17 @@ def terraformStep(tfStep)
     stage("Terraform $tfStep"){
         // withCredentials([azureServicePrincipal(
         //         credentialsId: credId,
-        //         subscriptionIdVariable: 'AZURE_SUBSCRIPTION_ID',
-        //         clientIdVariable: 'AZURE_CLIENT_ID',
-        //         clientSecretVariable: 'AZURE_CLIENT_SECRET',
-        //         tenantIdVariable: 'AZURE_TENANT_ID'
+        //         subscriptionIdVariable: 'ARM_SUBSCRIPTION_ID',
+        //         clientIdVariable: 'ARM_CLIENT_ID',
+        //         clientSecretVariable: 'ARM_CLIENT_SECRET',
+        //         tenantIdVariable: 'ARM_TENANT_ID'
         // )])
         withCredentials([azureServicePrincipal('sneha-sp')])
         {
             //echo "client ID is $AZURE_CLIENT_ID"
-            echo "client ID is $AZURE_CLIENT_ID"
-            sh "az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} -t ${AZURE_TENANT_ID} --allow-no-subscriptions"
+            echo "client ID is $ARM_CLIENT_ID"
+            sh "az login --service-principal -u ${ARM_CLIENT_ID} -p ${ARM_CLIENT_SECRET} -t ${ARM_TENANT_ID}"
+            sh "az account set --subscription ${ARM_SUBSCRIPTION_ID}"
             switch (tfStep) {
                 case "init":
                     echo "Executing Terraform init :"
